@@ -1,32 +1,113 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dim">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Project</title>
-  <link rel="stylesheet" href="/css/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Project - Climate Solutions</title>
+    <link href="/css/main.css" rel="stylesheet">
 </head>
-<body>
-  <%- include('partials/navbar') %>
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold mb-8">Add New Project</h1>
-    <form action="/solutions/addProject" method="POST" class="max-w-2xl space-y-6">
-      <input type="text" name="title" placeholder="Title" required class="input input-bordered w-full" />
-      <input type="url" name="feature_img_url" placeholder="Feature Image URL" required class="input input-bordered w-full" />
-      <select name="sector_id" required class="select select-bordered w-full">
-        <% sectors.forEach(s => { %>
-          <option value="<%= s.id %>"><%= s.sector_name %></option>
-        <% }) %>
-      </select>
-      <textarea name="summary_short" placeholder="Short Summary" required class="textarea textarea-bordered w-full h-32"></textarea>
-      <textarea name="intro_short" placeholder="Short Intro" required class="textarea textarea-bordered w-full h-32"></textarea>
-      <textarea name="impact" placeholder="Impact Description" required class="textarea textarea-bordered w-full h-48"></textarea>
-      <input type="url" name="original_source_url" placeholder="Source URL" required class="input input-bordered w-full" />
-      <div class="flex gap-4">
-        <button type="submit" class="btn btn-success">Add Project</button>
-        <a href="/solutions/projects" class="btn btn-ghost">Cancel</a>
-      </div>
-    </form>
-  </div>
+<body class="bg-gray-100">
+    <%- include('partials/navbar') %>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-gray-200 rounded-lg mb-8 p-8 shadow-md">
+            <div class="text-center">
+                <div class="max-w-3xl mx-auto">
+                    <h1 class="text-5xl font-bold mb-6 text-gray-800">Add Project</h1>
+                    <p class="text-xl mb-8 text-gray-700 leading-relaxed">
+                        Use the below form to add a new Project to the collection
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg max-w-4xl mx-auto p-8">
+            <form action="/solutions/addProject" method="POST" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                            Project Title *
+                        </label>
+                        <input type="text" name="title" id="title" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                               required>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="feature_img_url">
+                            Feature Image URL *
+                        </label>
+                        <input type="url" name="feature_img_url" id="feature_img_url" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                               required>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="sector_id">
+                            Sector *
+                        </label>
+                        <select name="sector_id" id="sector_id" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent" required>
+                            <option value="">Select a sector</option>
+                            <% if (typeof sectors !== 'undefined') { %>
+                                <% sectors.forEach(sector => { %>
+                                    <option value="<%= sector.id %>"><%= sector.sector_name %></option>
+                                <% }); %>
+                            <% } else { %>
+                                <option value="1">Land Sinks</option>
+                                <option value="2">Industry</option>
+                                <option value="3">Transportation</option>
+                                <option value="4">Electricity</option>
+                                <option value="5">Food, Agriculture, and Land Use</option>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="intro_short">
+                            Short Introduction *
+                        </label>
+                        <textarea name="intro_short" id="intro_short" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent h-32"
+                                  required></textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="summary_short">
+                            Short Summary *
+                        </label>
+                        <textarea name="summary_short" id="summary_short" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent h-32"
+                                  required></textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="impact">
+                            Impact Description *
+                        </label>
+                        <textarea name="impact" id="impact" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent h-40"
+                                  required></textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="original_source_url">
+                            Original Source URL *
+                        </label>
+                        <input type="url" name="original_source_url" id="original_source_url" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                               required>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-6 border-t border-gray-200">
+                    <button type="submit" 
+                            class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-200">
+                        Add Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
 </body>
 </html>
