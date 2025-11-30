@@ -43,25 +43,30 @@ function initialize() {
 
 function getAllProjects() {
   return Project.findAll({
-    include: [Sector],
+    include: [Sector],               // ← VERY IMPORTANT
     order: [['id', 'ASC']]
   });
 }
 
 function getProjectById(id) {
   return Project.findAll({
-    include: [Sector],
-    where: { id }
-  }).then(data => {
-    if (data.length === 0) throw new Error("Project not found");
-    return data[0];
+    include: [Sector],               // ← VERY IMPORTANT
+    where: { id: id }
+  })
+  .then(data => {
+    if (data.length === 0) {
+      throw new Error("Project not found");
+    }
+    return data[0];                  // ← return the first (and only) project
   });
 }
 
 function getProjectsBySector(sector) {
   return Project.findAll({
     include: [Sector],
-    where: { '$Sector.sector_name$': { [Op.iLike]: `%${sector}%` } }
+    where: {
+      '$Sector.sector_name$': { [Op.iLike]: `%${sector}%` }
+    }
   });
 }
 
