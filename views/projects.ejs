@@ -3,67 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projects - Climate Solutions</title>
+  <title>All Projects - Climate Solutions</title>
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
   <%- include('partials/navbar') %>
-  
-  <div class="container mx-auto px-4 py-8">
-    
+
+  <div class="container mx-auto px-4 py-12">
     <div class="text-center mb-12">
-      <h1 class="text-4xl font-bold mb-4">
-        <% if (typeof sector !== 'undefined' && sector !== 'All') { %>
-          <%= sector %> Solutions
-        <% } else { %>
-          All Climate Solutions
-        <% } %>
+      <h1 class="text-5xl font-bold mb-4">
+        <%= currentSector ? currentSector + " Solutions" : "All Climate Solutions" %>
       </h1>
-      <p class="text-xl text-base-content/70">
-        Showing <%= projects.length %> project<%= projects.length !== 1 ? 's' : '' %>
-      </p>
+      <p class="text-xl opacity-80">Showing <%= projects.length %> project<%= projects.length !== 1 ? 's' : '' %></p>
     </div>
 
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <% projects.forEach(project => { %>
-        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
-          <figure class="h-52 overflow-hidden">
-            <img src="<%= project.feature_img_url %>" 
-                 alt="<%= project.title %>" 
-                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+        <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-all">
+          <figure class="h-64">
+            <img src="<%= project.feature_img_url %>" alt="<%= project.title %>" class="w-full h-full object-cover rounded-t-box">
           </figure>
           <div class="card-body">
-            <div class="badge badge-outline mb-2"><%= project.sector %></div>
-            <h2 class="card-title text-lg">
-              <%= project.title %>
-            </h2>
-            <p class="text-sm line-clamp-3"><%= project.summary_short %></p>
-            <div class="card-actions justify-end mt-4">
-              <a href="/solutions/projects/<%= project.id %>" class="btn btn-primary btn-sm">
-                Learn More →
-              </a>
+            <div class="badge badge-primary mb-3"><%= project.Sector.sector_name %></div>
+            <h2 class="card-title text-2xl"><%= project.title %></h2>
+            <p class="text-base opacity-80 line-clamp-3"><%= project.summary_short %></p>
+            <div class="card-actions justify-end mt-6">
+              <a href="/solutions/project/<%= project.id %>" class="btn btn-primary">Learn More →</a>
             </div>
           </div>
         </div>
-      <% }); %>
+      <% }) %>
     </div>
 
-    
-    <div class="flex justify-center mb-8">
-      <a href="/" class="btn btn-outline">
-        ← Back to Home
-      </a>
-    </div>
+    <% if (projects.length === 0) { %>
+      <div class="text-center py-20">
+        <p class="text-2xl opacity-60">No projects found in this sector.</p>
+      </div>
+    <% } %>
   </div>
-
-  <footer class="footer footer-center p-10 bg-base-200 text-base-content rounded">
-    <aside>
-      <p class="font-bold">Climate Solutions Project</p> 
-      <p>WEB322 - Assignment 2</p>
-      <p>Copyright © 2025 - All rights reserved</p>
-    </aside>
-  </footer>
-
 </body>
 </html>
