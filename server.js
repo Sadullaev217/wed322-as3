@@ -80,6 +80,36 @@ app.get("/solutions/sector/:name", ensureLogin, (req, res) => {
         }))
         .catch(() => res.render("404"));
 });
+// EDIT PROJECT - GET form
+app.get("/solutions/editProject/:id", ensureLogin, (req, res) => {
+    Promise.all([
+        projectService.getProjectById(req.params.id),
+        projectService.getAllSectors()
+    ])
+    .then(([project, sectors]) => {
+        res.render("editProject", { project, sectors });
+    })
+    .catch(err => res.render("500", { message: err.message || err }));
+});
+
+// EDIT PROJECT - POST update
+app.post("/solutions/editProject", ensureLogin, (req, res) => {
+    const { id, ...data } = req.body;
+    const projectData = {
+        ...data,
+        sector_id: parseInt(data.sector_id, 10)
+    };
+    projectService.updateProject(id, projectData)
+        .then(() => res.redirect("/solutions/projects"))
+        .catch(err => res.render("500", { message: err.message || "Update failed" }));
+});
+
+// DELETE PROJECT
+app.get("/solutions/deleteProject/:id", ensureLogin, (req, res) => {
+    projectService.deleteProject(req.params.id)
+        .then(() => res.redirect("/solutions/projects"))
+        .catch(err => res.render("500", { message: err.message || "Delete failed" }));
+});
 // Add Project
 app.get("/solutions/addProject", ensureLogin, (req, res) => {
     projectService.getAllSectors()

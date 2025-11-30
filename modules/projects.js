@@ -82,16 +82,20 @@ function addProject(projectData) {
 }
 
 function updateProject(id, projectData) {
-  return Project.update(projectData, { where: { id } })
-    .then(result => {
-      if (result[0] === 0) throw new Error("Project not found");
-    });
+  return Project.update(projectData, {
+    where: { id: id }
+  }).then(result => {
+    if (result[0] === 0) throw new Error("Project not found");
+  });
 }
 
 function deleteProject(id) {
-  return Project.destroy({ where: { id } });
+  return Project.destroy({
+    where: { id: id }
+  }).then(count => {
+    if (count === 0) throw new Error("Project not found");
+  });
 }
-
 // Export everything
 module.exports = {
   initialize,
