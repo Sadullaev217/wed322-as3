@@ -59,7 +59,10 @@ app.get("/", ensureLogin, (req, res) => {
 
 app.get("/solutions/projects", ensureLogin, (req, res) => {
     projectService.getAllProjects()
-        .then(projects => res.render("projects", { projects }))
+        .then(projects => res.render("projects", { 
+            projects, 
+            currentSector: null   // ← this prevents the error
+        }))
         .catch(err => res.render("500", { message: err.message || err }));
 });
 
@@ -73,12 +76,10 @@ app.get("/solutions/sector/:name", ensureLogin, (req, res) => {
     projectService.getProjectsBySector(req.params.name)
         .then(projects => res.render("projects", { 
             projects, 
-            // ← pass both
-            currentSector: req.params.name 
+            currentSector: req.params.name   // ← pass the sector name
         }))
         .catch(() => res.render("404"));
 });
-
 // Add Project
 app.get("/solutions/addProject", ensureLogin, (req, res) => {
     projectService.getAllSectors()
