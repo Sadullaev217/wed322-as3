@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dim">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Project</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Edit Project</h1>
+    <form action="/solutions/editProject" method="POST" class="max-w-2xl space-y-6">
+      <input type="hidden" name="id" value="<%= project.id %>" />
+      <input type="text" name="title" value="<%= project.title %>" required class="input input-bordered w-full" />
+      <input type="url" name="feature_img_url" value="<%= project.feature_img_url %>" required class="input input-bordered w-full" />
+      <select name="sector_id" required class="select select-bordered w-full">
+        <% sectors.forEach(s => { %>
+          <option value="<%= s.id %>" <%= project.sector_id === s.id ? 'selected' : '' %>><%= s.sector_name %></option>
+        <% }) %>
+      </select>
+      <textarea name="summary_short" required class="textarea textarea-bordered w-full h-32"><%= project.summary_short %></textarea>
+      <textarea name="intro_short" required class="textarea textarea-bordered w-full h-32"><%= project.intro_short %></textarea>
+      <textarea name="impact" required class="textarea textarea-bordered w-full h-48"><%= project.impact %></textarea>
+      <input type="url" name="original_source_url" value="<%= project.original_source_url %>" required class="input input-bordered w-full" />
+      <div class="flex gap-4">
+        <button type="submit" class="btn btn-primary">Update Project</button>
+        <a href="/solutions/projects" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
