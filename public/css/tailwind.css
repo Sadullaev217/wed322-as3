@@ -1,0 +1,11 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@plugin '@tailwindcss/typography';
+@plugin 'daisyui';
+
+[data-theme="dim"] {
+  --color-primary: #1fb2a6;
+  --color-secondary: #1d4ed8;
+}

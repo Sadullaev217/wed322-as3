@@ -1,0 +1,25 @@
+{
+  "name": "web322-a2",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build-css": "npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css",
+    "watch-css": "npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css --watch"
+  },
+  "author": "YOUR NAME",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.2",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "daisyui": "^3.9.4",
+    "tailwindcss": "^3.4.18"
+  }
+}

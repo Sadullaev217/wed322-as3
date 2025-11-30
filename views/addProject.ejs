@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dim">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Project</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Add New Project</h1>
+    <form action="/solutions/addProject" method="POST" class="max-w-2xl space-y-6">
+      <input type="text" name="title" placeholder="Title" required class="input input-bordered w-full" />
+      <input type="url" name="feature_img_url" placeholder="Feature Image URL" required class="input input-bordered w-full" />
+      <select name="sector_id" required class="select select-bordered w-full">
+        <% sectors.forEach(s => { %>
+          <option value="<%= s.id %>"><%= s.sector_name %></option>
+        <% }) %>
+      </select>
+      <textarea name="summary_short" placeholder="Short Summary" required class="textarea textarea-bordered w-full h-32"></textarea>
+      <textarea name="intro_short" placeholder="Short Intro" required class="textarea textarea-bordered w-full h-32"></textarea>
+      <textarea name="impact" placeholder="Impact Description" required class="textarea textarea-bordered w-full h-48"></textarea>
+      <input type="url" name="original_source_url" placeholder="Source URL" required class="input input-bordered w-full" />
+      <div class="flex gap-4">
+        <button type="submit" class="btn btn-success">Add Project</button>
+        <a href="/solutions/projects" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
