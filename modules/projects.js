@@ -1,28 +1,23 @@
 require('dotenv').config();
-require('pg');
-
 const { Sequelize, Op } = require('sequelize');
 
-// Connect to Neon Postgres
-const sequelize = new Sequelize(
-  process.env.PGDATABASE,
-  process.env.PGUSER,
-  process.env.PGPASSWORD,
-  {
-    host: process.env.PGHOST,
-    dialect: 'postgres',
-    dialectOptions: {
-      ssl: { rejectUnauthorized: false }
-    },
-    logging: false
+// Use DATABASE_URL (Vercel + Neon standard) — THIS IS THE KEY FIX
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false   // Required for Neon on Vercel
+    }
   }
-);
+});
 
 // Define Models
 const Sector = sequelize.define('Sector', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   sector_name: Sequelize.STRING
-}, { createdAt: false, updatedAt: false });
+}, { createdAt: false, updatedAt: false, freezeTableName: true });
 
 const Project = sequelize.define('Project', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
@@ -31,33 +26,38 @@ const Project = sequelize.define('Project', {
   summary_short: Sequelize.TEXT,
   intro_short: Sequelize.TEXT,
   impact: Sequelize.TEXT,
-  original_source_url: Sequelize.STRING
-}, { createdAt: false, updatedAt: false });
+  original_source_url: Sequelize.STRING,
+  sector_id: Sequelize.INTEGER
+}, { createdAt: false, updatedAt: false, freezeTableName: true });
 
 Project.belongsTo(Sector, { foreignKey: 'sector_id' });
+Sector.hasMany(Project, { foreignKey: 'sector_id' });
 
 // === All Functions ===
 function initialize() {
-  return sequelize.sync();
+  return sequelize.authenticate()
+    .then(() => sequelize.sync())
+    .then(() => console.log("Database connected & synced"))
+    .catch(err => {
+      console.error("DB Connection Failed:", err);
+      throw err;
+    });
 }
 
 function getAllProjects() {
   return Project.findAll({
-    include: [Sector],               // ← VERY IMPORTANT
+    include: [Sector],
     order: [['id', 'ASC']]
   });
 }
 
 function getProjectById(id) {
-  return Project.findAll({
-    include: [Sector],               // ← VERY IMPORTANT
-    where: { id: id }
-  })
-  .then(data => {
-    if (data.length === 0) {
-      throw new Error("Project not found");
-    }
-    return data[0];                  // ← return the first (and only) project
+  return Project.findOne({
+    include: [Sector],
+    where: { id }
+  }).then(project => {
+    if (!project) throw new Error("Project not found");
+    return project;
   });
 }
 
@@ -75,28 +75,23 @@ function getAllSectors() {
 }
 
 function addProject(projectData) {
-  return Project.create(projectData)
-    .catch(err => {
-      throw new Error(err.errors?.[0]?.message || "Failed to add project");
-    });
+  return Project.create(projectData);
 }
 
 function updateProject(id, projectData) {
-  return Project.update(projectData, {
-    where: { id: id }
-  }).then(result => {
-    if (result[0] === 0) throw new Error("Project not found");
-  });
+  return Project.update(projectData, { where: { id } })
+    .then(([affected]) => {
+      if (affected === 0) throw new Error("Project not found");
+    });
 }
 
 function deleteProject(id) {
-  return Project.destroy({
-    where: { id: id }
-  }).then(count => {
-    if (count === 0) throw new Error("Project not found");
-  });
+  return Project.destroy({ where: { id } })
+    .then(count => {
+      if (count === 0) throw new Error("Project not found");
+    });
 }
-// Export everything
+
 module.exports = {
   initialize,
   getAllProjects,
