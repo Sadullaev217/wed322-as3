@@ -7,12 +7,13 @@
 *  Name: Sadulloev Shokhjakhon
 *  Student ID: 122850241
 *  Date: November 30, 2025
-*  Published URL: https://wed322-as3.vercel.app     <--- CHANGE THIS TO YOUR LIVE LINK
+*  Published URL: https://wed322-as3.vercel.app     <--- CHANGE THIS LATER
 ********************************************************************************/
 
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
+const clientSessions = require('client-sessions');  // ← CORRECT name
 const projectService = require("./modules/projects");
 
 const app = express();
@@ -23,156 +24,123 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-    secret: "web322-a3-secret-2025",
-    resave: false,
-    saveUninitialized: false
+
+// === SECURE SESSION (client-sessions) ===
+app.use(clientSessions({
+  cookieName: 'session',
+  secret: process.env.SESSIONSECRET,
+  duration: 30 * 60 * 1000,        // 30 minutes
+  activeDuration: 5 * 60 * 1000    // +5 min if active
 }));
 
-// ========== Login / Logout ==========
+// Make session available in all views
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+
+// === Login / Logout ===
 app.get("/login", (req, res) => {
-    res.render("login", { error: null });
+  res.render("login", { errorMessage: null });
 });
 
 app.post("/login", (req, res) => {
-    if (req.body.user === "admin" && req.body.password === "admin") {
-        req.session.user = "admin";
-        res.redirect("/solutions/projects");
-    } else {
-        res.render("login", { error: "Wrong credentials → use admin / admin" });
-    }
+  if (req.body.userName === process.env.ADMINUSER && req.body.password === process.env.ADMINPASSWORD) {
+    req.session.user = { userName: req.body.userName };
+    res.redirect("/solutions/projects");
+  } else {
+    res.render("login", { errorMessage: "Invalid credentials – use admin / admin" });
+  }
 });
 
 app.get("/logout", (req, res) => {
-    req.session.destroy();
-    res.redirect("/login");
+  req.session.reset();
+  res.redirect("/login");
 });
 
+// === Protect all routes ===
 const ensureLogin = (req, res, next) => {
-    req.session.user ? next() : res.redirect("/login");
+  req.session.user ? next() : res.redirect("/login");
 };
 
-// ========== Routes ==========
-app.get("/", ensureLogin, (req, res) => {
-    res.redirect("/solutions/projects");
-});
+// === Routes ===
+app.get("/", ensureLogin, (req, res) => res.redirect("/solutions/projects"));
 
 app.get("/solutions/projects", ensureLogin, (req, res) => {
-    projectService.getAllProjects()
-        .then(projects => res.render("projects", { 
-            projects, 
-            currentSector: null   // ← this prevents the error
-        }))
-        .catch(err => res.render("500", { message: err.message || err }));
+  projectService.getAllProjects()
+    .then(projects => res.render("projects", { projects, currentSector: null }))
+    .catch(err => res.render("500", { message: err }));
 });
 
 app.get("/solutions/project/:id", ensureLogin, (req, res) => {
-    projectService.getProjectById(req.params.id)
-        .then(project => res.render("project", { project }))
-        .catch(() => res.render("404"));
+  projectService.getProjectById(req.params.id)
+    .then(project => res.render("project", { project }))
+    .catch(() => res.render("404"));
 });
 
 app.get("/solutions/sector/:name", ensureLogin, (req, res) => {
-    projectService.getProjectsBySector(req.params.name)
-        .then(projects => res.render("projects", { 
-            projects, 
-            currentSector: req.params.name   // ← pass the sector name
-        }))
-        .catch(() => res.render("404"));
-});
-// EDIT PROJECT - GET form
-app.get("/solutions/editProject/:id", ensureLogin, (req, res) => {
-    Promise.all([
-        projectService.getProjectById(req.params.id),
-        projectService.getAllSectors()
-    ])
-    .then(([project, sectors]) => {
-        res.render("editProject", { project, sectors });
-    })
-    .catch(err => res.render("500", { message: err.message || err }));
+  projectService.getProjectsBySector(req.params.name)
+    .then(projects => res.render("projects", { projects, currentSector: req.params.name }))
+    .catch(() => res.render("404"));
 });
 
-// EDIT PROJECT - POST update
-app.post("/solutions/editProject", ensureLogin, (req, res) => {
-    const { id, ...data } = req.body;
-    const projectData = {
-        ...data,
-        sector_id: parseInt(data.sector_id, 10)
-    };
-    projectService.updateProject(id, projectData)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: err.message || "Update failed" }));
-});
-
-// DELETE PROJECT
-app.get("/solutions/deleteProject/:id", ensureLogin, (req, res) => {
-    projectService.deleteProject(req.params.id)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: err.message || "Delete failed" }));
-});
 // Add Project
 app.get("/solutions/addProject", ensureLogin, (req, res) => {
-    projectService.getAllSectors()
-        .then(sectors => res.render("addProject", { sectors }))
-        .catch(err => res.render("500", { message: err.message }));
+  projectService.getAllSectors()
+    .then(sectors => res.render("addProject", { sectors }))
+    .catch(err => res.render("500", { message: err }));
 });
 
 app.post("/solutions/addProject", ensureLogin, (req, res) => {
-    const projectData = {
-        ...req.body,
-        sector_id: parseInt(req.body.sector_id, 10)   // ← CRITICAL FIX
-    };
-    projectService.addProject(projectData)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: err.message || "Failed to add project" }));
+  const projectData = {
+    ...req.body,
+    sector_id: parseInt(req.body.sector_id, 10)
+  };
+  projectService.addProject(projectData)
+    .then(() => res.redirect("/solutions/projects"))
+    .catch(err => res.render("500", { message: err }));
 });
 
 // Edit Project
 app.get("/solutions/editProject/:id", ensureLogin, (req, res) => {
-    Promise.all([
-        projectService.getProjectById(req.params.id),
-        projectService.getAllSectors()
-    ])
-    .then(([project, sectors]) => {
-        res.render("editProject", { project, sectors });
-    })
-    .catch(err => res.render("500", { message: err.message }));
+  Promise.all([
+    projectService.getProjectById(req.params.id),
+    projectService.getAllSectors()
+  ])
+  .then(([project, sectors]) => res.render("editProject", { project, sectors }))
+  .catch(err => res.render("500", { message: err }));
 });
 
 app.post("/solutions/editProject", ensureLogin, (req, res) => {
-    const { id, ...data } = req.body;
-    const projectData = {
-        ...data,
-        sector_id: parseInt(data.sector_id, 10)   // ← ALSO FIXED HERE
-    };
-    projectService.updateProject(id, projectData)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: err.message || "Failed to update" }));
+  const { id, ...data } = req.body;
+  const projectData = {
+    ...data,
+    sector_id: parseInt(data.sector_id, 10)
+  };
+  projectService.updateProject(id, projectData)
+    .then(() => res.redirect("/solutions/projects"))
+    .catch(err => res.render("500", { message: err }));
 });
 
 // Delete Project
-app.get("/solutions/projects", ensureLogin, (req, res) => {
-    projectService.getAllProjects()
-        .then(projects => res.render("projects", { 
-            projects, 
-            currentSector: null   // ← this fixes the error
-        }))
-        .catch(err => res.render("500", { message: err.message || err }));
+app.get("/solutions/deleteProject/:id", ensureLogin, (req, res) => {
+  projectService.deleteProject(req.params.id)
+    .then(() => res.redirect("/solutions/projects"))
+    .catch(err => res.render("500", { message: err }));
 });
 
 // 404
 app.use((req, res) => {
-    res.status(404).render("404");
+  res.status(404).render("404");
 });
 
-// ========== Start Server ==========
+// Start server
 projectService.initialize()
-    .then(() => {
-        app.listen(HTTP_PORT, () => {
-            console.log(`Server running → http://localhost:${HTTP_PORT}`);
-            console.log(`Login → http://localhost:${HTTP_PORT}/login (admin / admin)`);
-        });
-    })
-    .catch(err => {
-        console.error("Database connection failed:", err);
+  .then(() => {
+    app.listen(HTTP_PORT, () => {
+      console.log(`Server running on http://localhost:${HTTP_PORT}`);
     });
+  })
+  .catch(err => {
+    console.error("Failed to connect to database:", err);
+  });
